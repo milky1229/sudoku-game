@@ -457,23 +457,110 @@ function showRules(){
   m.addEventListener('click',e=>{if(e.target===m)m.remove()});
 }
 
-// ============ TUTORIAL (first time only) ============
-const TUT_STEPS=[
-  {title:'Welcome!',visual:`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:90px;margin:0 auto 8px"><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1a2744">1</div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#3fb8af;font-weight:700">?</div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1a2744">3</div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#3fb8af;font-weight:700">?</div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1a2744">2</div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#3fb8af;font-weight:700">?</div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1a2744">3</div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#3fb8af;font-weight:700">?</div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1a2744">1</div></div>`,text:'Fill <span style="color:#3fb8af;font-weight:700">?</span> cells with numbers.<br/>Each <b>row</b>, <b>column</b> & <b>box</b> → all different!'},
-  {title:'Tap & Place',visual:`<div style="position:relative;width:140px;margin:0 auto 8px"><div style="background:#e0f7f5;border:2px solid #3fb8af;border-radius:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:18px;font-weight:700;color:#3fb8af">5</div><div style="position:absolute;top:32px;left:72px;font-size:22px;animation:bubbleHop 1s infinite">👆</div><div style="display:flex;gap:4px;justify-content:center;margin-top:8px">${[1,2,3,4,5].map(n=>`<div style="width:26px;height:26px;border-radius:50%;border:2px solid ${n===5?'#3fb8af':'#d4a853'};background:${n===5?'#3fb8af':'#faf3e3'};color:${n===5?'#fff':'#1a2744'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${n}</div>`).join('')}</div></div>`,text:'Tap a cell → pick a number below.<br/>It fills in instantly!'},
-  {title:'Conflicts = Red',visual:`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:96px;margin:0 auto 8px"><div style="background:#f8d7d7;border:1px solid #c0392b;border-radius:3px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#c0392b">3</div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#1a2744">1</div><div style="background:#f8d7d7;border:1px solid #c0392b;border-radius:3px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#c0392b">3</div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#1a2744">2</div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:30px"></div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:30px"></div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:30px"></div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:30px"></div><div style="background:#faf3e3;border:1px solid #d4a853;border-radius:3px;height:30px"></div></div>`,text:'Same number in a row/column/box?<br/><span style="color:#c0392b;font-weight:700">Red flash</span> = conflict! Fix it.'},
-  {title:'Tools',visual:`<div style="display:flex;gap:6px;justify-content:center;margin-bottom:8px;flex-wrap:wrap">${[['✏️','Notes'],['↩️','Undo'],['💡','Hint'],['🧹','Erase']].map(([e,l])=>`<div style="background:linear-gradient(135deg,#0d4f4f,#1a2744);border:1px solid #d4a853;border-radius:6px;padding:6px 8px;text-align:center"><div style="font-size:18px">${e}</div><div style="font-size:9px;color:#d4a853;margin-top:2px">${l}</div></div>`).join('')}</div>`,text:'<b>Notes</b> = pencil marks &nbsp; <b>Hint</b> = reveal 1 cell<br/><b>Undo</b> = go back &nbsp; <b>Erase</b> = clear cell'},
-  {title:'Grow & Shine',visual:`<div style="text-align:center"><div style="display:flex;justify-content:center;gap:8px;margin-bottom:6px"><div style="background:#2a3050;border:1.5px solid #d4a853;border-radius:8px;padding:6px 10px;color:#d4a853;font-weight:700;font-size:11px">5×5</div><div style="background:#2a3050;border:1.5px solid #d4a853;border-radius:8px;padding:6px 10px;color:#d4a853;font-weight:700;font-size:11px">6×6</div><div style="background:#2a3050;border:1.5px solid #d4a853;border-radius:8px;padding:6px 10px;color:#d4a853;font-weight:700;font-size:11px">9×9</div></div><div style="font-size:22px;margin-top:4px">⭐⭐⭐</div></div>`,text:'Start small (5×5) → grow to 9×9!<br/>Faster finish = more <span style="color:#ffd54a">★ stars</span>!'},
-];
+// ============ TUTORIAL (interactive 3x3 walkthrough) ============
 function showTutorial(onDone){
-  let step=0;
   const ov=document.createElement('div');ov.className='tut-overlay';
-  function render(){
-    const s=TUT_STEPS[step];
-    ov.innerHTML=`<div class="tut-card">${s.visual}<h3>${s.title}</h3><p>${s.text}</p></div><div class="tut-dots">${TUT_STEPS.map((_,i)=>`<span class="${i===step?'active':''}"></span>`).join('')}</div><div class="tut-nav"><button class="btn-skip">Skip</button><button class="btn-next">${step===TUT_STEPS.length-1?"Let's Go!":'Next →'}</button></div>`;
-    ov.querySelector('.btn-skip').onclick=()=>{ov.remove();markTutDone();if(onDone)onDone()};
-    ov.querySelector('.btn-next').onclick=()=>{if(step<TUT_STEPS.length-1){step++;render()}else{ov.remove();markTutDone();if(onDone)onDone()}};
+  // 3x3 puzzle: solution=[1,2,3,2,3,1,3,1,2], givens at positions 0,4,8 (diagonal)
+  const SOL=[1,2,3,2,3,1,3,1,2];
+  const GIVEN=[true,false,false,false,true,false,false,false,true];
+  const board=[1,0,0,0,3,0,0,0,2];
+  // Steps: each step asks user to fill one cell
+  const STEPS=[
+    {idx:1,text:'Look at <b>Row 1</b>: it has 1 and _,_<br/>It needs <b style="color:#3fb8af">2</b> and <b style="color:#3fb8af">3</b>.<br/><br/>Look at <b>Column 2</b>: it already has 3 (middle).<br/>So this cell can only be <b style="color:#3fb8af">2</b>!<br/><br/>👆 <b>Tap the cell, then tap 2</b>'},
+    {idx:2,text:'<b>Row 1</b> has 1 and 2 now.<br/>The only number left is <b style="color:#3fb8af">3</b>!<br/><br/>👆 <b>Tap the cell, then tap 3</b>'},
+    {idx:3,text:'<b>Row 2</b>: has 3 in middle.<br/><b>Column 1</b>: has 1 (top) and ? (bottom=3).<br/>So this must be <b style="color:#3fb8af">2</b>!<br/><br/>👆 <b>Tap the cell, then tap 2</b>'},
+    {idx:5,text:'<b>Row 2</b>: has 2 and 3.<br/>Only <b style="color:#3fb8af">1</b> is missing!<br/><br/>👆 <b>Tap the cell, then tap 1</b>'},
+    {idx:6,text:'<b>Column 1</b>: has 1, 2.<br/>Must be <b style="color:#3fb8af">3</b>!<br/><br/>👆 <b>Tap the cell, then tap 3</b>'},
+    {idx:7,text:'<b>Row 3</b>: has 3 and 2.<br/>Last one is <b style="color:#3fb8af">1</b>!<br/><br/>👆 <b>Tap the cell, then tap 1</b>'},
+  ];
+  let stepIdx=0;
+  let selectedCell=-1;
+
+  function cellBg(i){
+    if(i===STEPS[stepIdx]?.idx&&board[i]===0)return selectedCell===i?'#e0f7f5':'#fff3c4';
+    if(GIVEN[i])return'#faf3e3';
+    if(board[i])return'#e0f7f5';
+    return'#faf3e3';
   }
+  function cellBorder(i){
+    if(i===STEPS[stepIdx]?.idx&&board[i]===0)return selectedCell===i?'2px solid #3fb8af':'2px solid #ffd54a';
+    return'1px solid #d4a853';
+  }
+  function cellColor(i){return GIVEN[i]?'#1a2744':'#3fb8af'}
+
+  function render(){
+    const step=STEPS[stepIdx];
+    const isComplete=stepIdx>=STEPS.length;
+    let gridHtml='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:132px;margin:0 auto">';
+    for(let i=0;i<9;i++){
+      const val=board[i];
+      gridHtml+=`<div class="tut-cell" data-i="${i}" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;border-radius:5px;cursor:${(!isComplete&&!GIVEN[i]&&board[i]===0)?'pointer':'default'};background:${cellBg(i)};border:${cellBorder(i)};color:${cellColor(i)};transition:all .15s">${val||''}</div>`;
+    }
+    gridHtml+='</div>';
+
+    let numpadHtml='';
+    if(!isComplete&&selectedCell>=0&&board[selectedCell]===0){
+      numpadHtml='<div style="display:flex;gap:6px;justify-content:center;margin-top:10px">';
+      for(let n=1;n<=3;n++){
+        numpadHtml+=`<div class="tut-num" data-n="${n}" style="width:36px;height:36px;border-radius:50%;border:2px solid #d4a853;background:#faf3e3;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#1a2744;cursor:pointer;transition:transform .1s">${n}</div>`;
+      }
+      numpadHtml+='</div>';
+    }
+
+    const progress=`<div style="display:flex;gap:4px;justify-content:center;margin-bottom:8px">${STEPS.map((_,i)=>`<div style="width:8px;height:8px;border-radius:50%;background:${i<stepIdx?'#3fb8af':i===stepIdx?'#ffd54a':'#444'}"></div>`).join('')}</div>`;
+
+    if(isComplete){
+      ov.innerHTML=`<div class="tut-card">
+        ${progress}
+        ${gridHtml}
+        <div style="font-size:28px;margin:12px 0">🎉</div>
+        <h3 style="color:#ffd54a">You solved it!</h3>
+        <p style="color:#f5e6c8;font-size:.82em;line-height:1.5">That's the core logic:<br/><b>Eliminate</b> what's already in the row, column & box.<br/>The last remaining number is the answer!<br/><br/>Real puzzles are bigger (5×5 → 9×9) but the logic is the same.</p>
+        <div class="tut-nav" style="margin-top:14px;justify-content:center"><button class="btn-next" style="padding:10px 28px;border-radius:8px;border:0;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#d4a853,#b8892e);color:#1a2744;font-size:.9em">Let's Play! →</button></div>
+      </div>`;
+      ov.querySelector('.btn-next').onclick=()=>{ov.remove();markTutDone();if(onDone)onDone()};
+      return;
+    }
+
+    ov.innerHTML=`<div class="tut-card">
+      ${progress}
+      <h3 style="color:#ffd54a;margin-bottom:6px">Fill the 3×3 Grid</h3>
+      <p style="font-size:.7em;color:rgba(245,230,200,.6);margin-bottom:8px">Each row & column must have 1, 2, 3 (no repeats)</p>
+      ${gridHtml}
+      ${numpadHtml}
+      <div style="margin-top:12px;font-size:.78em;color:#f5e6c8;line-height:1.6;text-align:left;padding:0 4px">${step.text}</div>
+      <div class="tut-nav" style="margin-top:12px;justify-content:center"><button class="btn-skip" style="padding:8px 18px;border-radius:8px;border:0;font-weight:700;cursor:pointer;font-family:inherit;background:#3a3a4a;color:#ccc;font-size:.8em">Skip Tutorial</button></div>
+    </div>`;
+
+    // Bind cell clicks
+    ov.querySelectorAll('.tut-cell').forEach(el=>{
+      el.onclick=()=>{
+        const i=parseInt(el.dataset.i);
+        if(GIVEN[i]||board[i]!==0)return;
+        if(i===step.idx){selectedCell=i;render()}
+      };
+    });
+    // Bind numpad
+    ov.querySelectorAll('.tut-num').forEach(el=>{
+      el.onclick=()=>{
+        const n=parseInt(el.dataset.n);
+        if(selectedCell<0)return;
+        if(n===SOL[selectedCell]){
+          board[selectedCell]=n;selectedCell=-1;stepIdx++;
+          try{playClick()}catch(e){}
+          render();
+        }else{
+          try{playError()}catch(e){}
+          el.style.transform='scale(.8)';el.style.background='#f8d7d7';
+          setTimeout(()=>{el.style.transform='';el.style.background='#faf3e3'},300);
+        }
+      };
+    });
+    // Skip
+    const skipBtn=ov.querySelector('.btn-skip');
+    if(skipBtn)skipBtn.onclick=()=>{ov.remove();markTutDone();if(onDone)onDone()};
+  }
+
   render();document.body.appendChild(ov);
 }
 function isTutDone(){try{return localStorage.getItem('sudoku_tut_done')==='1'}catch(e){return false}}
