@@ -102,6 +102,13 @@ body{
 .toolbar button{background:linear-gradient(135deg,var(--teal),var(--navy));color:var(--gold);border:1px solid var(--gold);padding:7px 12px;border-radius:6px;font-size:.78em;cursor:pointer;font-family:inherit;transition:transform .1s}
 .toolbar button:active{transform:scale(.95)}
 .toolbar button.active{background:var(--turquoise);color:var(--navy);border-color:var(--turquoise)}
+.items-bar{margin-top:8px;gap:10px}
+.items-bar button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 12px;position:relative;min-width:60px}
+.items-bar .item-icon{font-size:16px;line-height:1}
+.items-bar .item-label{font-size:.65em;opacity:.8}
+.items-bar .item-count{position:absolute;top:-4px;right:-4px;background:var(--turquoise);color:var(--navy);font-size:9px;font-weight:900;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.items-bar button:disabled{opacity:.35;cursor:default}
+.items-bar button:disabled .item-count{background:#555;color:#999}
 .numpad{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:6px}
 .numpad button{width:38px;height:38px;border-radius:50%;background:var(--parchment);color:var(--navy);border:2px solid var(--gold);font-size:1.1em;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .1s,background .1s;box-shadow:0 2px 5px rgba(0,0,0,.2)}
 .numpad button:active{transform:scale(.9);background:var(--gold);color:#fff}
@@ -179,7 +186,7 @@ body{
   </div>
   <div class="info-bar">
     <span id="timerDisplay">00:00</span>
-    <span id="hintCount">Hints: 3</span>
+    <span style="font-size:.75em;color:var(--turquoise)" id="levelTag"></span>
   </div>
   <div class="progress-wrap">
     <div class="progress-track">
@@ -192,13 +199,17 @@ body{
   </div>
   <div class="grid-wrap"><div class="grid" id="grid"></div></div>
   <div class="numpad" id="numpad"></div>
-  <div class="toolbar">
+  <div class="toolbar" id="toolbarFn">
     <button id="btnNotes">Notes</button>
     <button id="btnUndo">Undo</button>
-    <button id="btnHint">Hint</button>
     <button id="btnErase">Erase</button>
     <button id="btnRules">?</button>
     <button id="btnHome">Home</button>
+  </div>
+  <div class="toolbar items-bar" id="toolbarItems">
+    <button id="btnHint"><span class="item-icon">💡</span><span class="item-label">Hint</span><span class="item-count" id="hintLeft">3</span></button>
+    <button id="btnCheck"><span class="item-icon">✅</span><span class="item-label">Check</span><span class="item-count" id="checkLeft">3</span></button>
+    <button id="btnShuffle"><span class="item-icon">🔀</span><span class="item-label">Reveal Row</span><span class="item-count" id="revealLeft">3</span></button>
   </div>
 </div>
 <script>
@@ -250,7 +261,7 @@ function generatePuzzle(size,boxDef,givens){
 }
 
 // ============ STATE ============
-let G={level:0,size:5,boxDef:'irregular',puzzle:null,solution:null,board:null,notes:null,given:null,selected:null,notesMode:false,hints:3,undoStack:[],timer:0,timerInterval:null,paused:false};
+let G={level:0,size:5,boxDef:'irregular',puzzle:null,solution:null,board:null,notes:null,given:null,selected:null,notesMode:false,hints:3,checks:3,reveals:3,undoStack:[],timer:0,timerInterval:null,paused:false};
 
 function getStars(lv){try{return parseInt(localStorage.getItem('sudoku_stars_'+lv))||0}catch(e){return 0}}
 function setStars(lv,s){try{const old=getStars(lv);if(s>old)localStorage.setItem('sudoku_stars_'+lv,''+s)}catch(e){}}
@@ -371,7 +382,25 @@ function giveHint(){
   if(G.hints<=0)return;const{size,board,solution,given}=G;const empty=[];
   for(let r=0;r<size;r++)for(let c=0;c<size;c++){if(!given[r][c]&&board[r][c]!==solution[r][c])empty.push([r,c])}
   if(!empty.length)return;const[r,c]=empty[Math.random()*empty.length|0];
-  G.board[r][c]=solution[r][c];G.given[r][c]=true;G.hints--;$('hintCount').textContent='Hints: '+G.hints;playClick();updateCells();checkWin();
+  G.board[r][c]=solution[r][c];G.given[r][c]=true;G.hints--;updateItemCounts();playClick();updateCells();checkWin();
+}
+function useCheck(){
+  if(G.checks<=0)return;G.checks--;updateItemCounts();
+  const{size,board,solution,given}=G;let wrong=[];
+  for(let r=0;r<size;r++)for(let c=0;c<size;c++){if(!given[r][c]&&board[r][c]!==0&&board[r][c]!==solution[r][c])wrong.push([r,c])}
+  if(wrong.length===0){showToast('All placed numbers are correct! ✓',2000);playClick()}
+  else{playError();showToast(`${wrong.length} cell${wrong.length>1?'s':''} wrong!`,2500);wrong.forEach(([r,c])=>{const el=getCellEl(r,c);el.classList.add('conflict');setTimeout(()=>el.classList.remove('conflict'),2000)})}
+}
+function useRevealRow(){
+  if(G.reveals<=0)return;if(!G.selected){showToast('Select a cell first!',1500);return}
+  const[sr]=G.selected;const{size,board,solution,given}=G;let revealed=0;
+  for(let c=0;c<size;c++){if(!given[sr][c]&&board[sr][c]!==solution[sr][c]){board[sr][c]=solution[sr][c];given[sr][c]=true;revealed++}}
+  if(revealed===0){showToast('This row is already correct!',1500);return}
+  G.reveals--;updateItemCounts();playClick();updateCells();checkWin();
+}
+function updateItemCounts(){
+  $('hintLeft').textContent=G.hints;$('checkLeft').textContent=G.checks;$('revealLeft').textContent=G.reveals;
+  $('btnHint').disabled=G.hints<=0;$('btnCheck').disabled=G.checks<=0;$('btnShuffle').disabled=G.reveals<=0;
 }
 function hasConflict(r,c,num){const{size,board,boxDef}=G;for(let i=0;i<size;i++){if(i!==c&&board[r][i]===num)return true;if(i!==r&&board[i][c]===num)return true}const box=getBoxId(r,c,size,boxDef);for(let rr=0;rr<size;rr++)for(let cc=0;cc<size;cc++){if((rr!==r||cc!==c)&&getBoxId(rr,cc,size,boxDef)===box&&board[rr][cc]===num)return true}return false}
 function highlightConflicts(r,c,num){const{size,board,boxDef}=G;const box=getBoxId(r,c,size,boxDef);for(let rr=0;rr<size;rr++)for(let cc=0;cc<size;cc++){if(rr===r&&cc===c)continue;if((rr===r||cc===c||getBoxId(rr,cc,size,boxDef)===box)&&board[rr][cc]===num){const el=getCellEl(rr,cc);el.classList.add('conflict');setTimeout(()=>el.classList.remove('conflict'),600)}}getCellEl(r,c).classList.add('conflict');setTimeout(()=>getCellEl(r,c).classList.remove('conflict'),600)}
@@ -390,8 +419,8 @@ function startLevel(lv){
   const{puzzle,solution}=generatePuzzle(cfg.size,cfg.boxDef,cfg.givens);
   G.puzzle=puzzle;G.solution=solution;G.board=puzzle.map(r=>[...r]);G.given=puzzle.map(r=>r.map(v=>v!==0));
   G.notes=Array.from({length:cfg.size},()=>Array.from({length:cfg.size},()=>new Set()));
-  G.selected=null;G.notesMode=false;G.hints=3;G.undoStack=[];
-  $('hintCount').textContent='Hints: 3';$('btnNotes').classList.remove('active');
+  G.selected=null;G.notesMode=false;G.hints=3;G.checks=3;G.reveals=3;G.undoStack=[];
+  updateItemCounts();$('btnNotes').classList.remove('active');
   $('levelInfo').textContent=`Level ${lv+1} - ${cfg.size}\u00d7${cfg.size}`;
   $('progFill').style.width='0%';$('progFlame').style.left='0%';
   document.querySelectorAll('.star-marker').forEach(m=>m.classList.remove('dim'));
@@ -624,8 +653,10 @@ function markTutDone(){try{localStorage.setItem('sudoku_tut_done','1')}catch(e){
 // ============ BINDINGS ============
 $('btnNotes').onclick=()=>{G.notesMode=!G.notesMode;$('btnNotes').classList.toggle('active')};
 $('btnUndo').onclick=undo;$('btnHint').onclick=giveHint;$('btnErase').onclick=eraseCell;
+$('btnCheck').onclick=useCheck;$('btnShuffle').onclick=useRevealRow;
 $('btnHome').onclick=goHome;
 $('btnRules').onclick=showRules;
+$('btnTutMap').onclick=()=>showTutorial(null);
 $('btnRulesMap').onclick=showRules;
 $('btnTutMap').onclick=()=>showTutorial(null);
 document.addEventListener('keydown',e=>{const n=parseInt(e.key);if(n>=1&&n<=G.size)inputNumber(n);if(e.key==='Backspace'||e.key==='Delete')eraseCell();if(e.key==='z'&&(e.ctrlKey||e.metaKey))undo()});
