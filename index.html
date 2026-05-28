@@ -127,6 +127,33 @@ body{
 @keyframes starGlow{from{filter:drop-shadow(0 0 2px rgba(255,213,74,.6))}to{filter:drop-shadow(0 0 10px rgba(255,213,74,1)) drop-shadow(0 0 16px rgba(255,170,40,.5))}}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 .hidden{display:none!important}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;top:16%;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#c0392b,#922b21);color:#fff;padding:10px 20px;border-radius:10px;font-size:.85em;font-weight:700;z-index:9999;pointer-events:none;animation:toastIn .3s ease-out;box-shadow:0 4px 12px rgba(0,0,0,.4);text-align:center;max-width:85vw}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ===== RULES MODAL ===== */
+.rules-modal{position:fixed;inset:0;background:rgba(15,27,45,.95);display:flex;align-items:center;justify-content:center;z-index:10001;animation:fadein .2s}
+.rules-modal .rules-panel{background:linear-gradient(180deg,#2a3050,#1a1f3a);border:2px solid var(--gold);border-radius:16px;padding:24px 20px;width:min(340px,88vw);max-height:80vh;overflow-y:auto;position:relative}
+.rules-modal .rules-panel h2{color:var(--gold);font-size:1.3em;text-align:center;margin-bottom:12px}
+.rules-modal .rules-panel h3{color:var(--turquoise);font-size:.9em;margin:12px 0 4px}
+.rules-modal .rules-panel p,.rules-modal .rules-panel li{font-size:.8em;color:var(--sand);line-height:1.6;margin-bottom:4px}
+.rules-modal .rules-panel ul{padding-left:18px}
+.rules-modal .rules-panel .close-rules{display:block;margin:16px auto 0;background:linear-gradient(135deg,var(--gold),#b8892e);color:var(--navy);border:none;padding:10px 28px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:.9em}
+
+/* ===== TUTORIAL OVERLAY ===== */
+.tut-overlay{position:fixed;inset:0;background:rgba(15,27,45,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10002;animation:fadein .2s;gap:12px;padding:20px}
+.tut-overlay .tut-card{background:linear-gradient(180deg,#2a3050,#1a1f3a);border:2px solid var(--gold);border-radius:14px;padding:22px 18px;width:min(320px,85vw);text-align:center}
+.tut-overlay .tut-card h3{color:var(--gold);font-size:1.1em;margin-bottom:10px}
+.tut-overlay .tut-card p{color:var(--sand);font-size:.82em;line-height:1.6;margin-bottom:8px}
+.tut-overlay .tut-card .tut-img{font-size:2.5em;margin:8px 0}
+.tut-overlay .tut-dots{display:flex;gap:6px}
+.tut-overlay .tut-dots span{width:8px;height:8px;border-radius:50%;background:#555}
+.tut-overlay .tut-dots span.active{background:var(--gold)}
+.tut-overlay .tut-nav{display:flex;gap:10px}
+.tut-overlay .tut-nav button{padding:10px 22px;border-radius:8px;border:0;font-weight:700;cursor:pointer;font-family:inherit;font-size:.85em}
+.tut-overlay .tut-nav .btn-skip{background:#3a3a4a;color:#ccc}
+.tut-overlay .tut-nav .btn-next{background:linear-gradient(135deg,var(--gold),#b8892e);color:var(--navy)}
 </style>
 </head>
 <body>
@@ -135,6 +162,7 @@ body{
   <div class="map-header">
     <h1>Sudoku</h1>
     <div class="tagline">A Journey of Numbers</div>
+    <button id="btnRulesMap" style="margin-top:8px;background:linear-gradient(135deg,var(--teal),var(--navy));color:var(--gold);border:1px solid var(--gold);padding:6px 16px;border-radius:6px;font-size:.75em;cursor:pointer;font-family:inherit">How to Play</button>
   </div>
   <div class="map-scroll" id="mapScroll">
     <div class="map-container" id="mapContainer">
@@ -168,6 +196,7 @@ body{
     <button id="btnUndo">Undo</button>
     <button id="btnHint">Hint</button>
     <button id="btnErase">Erase</button>
+    <button id="btnRules">?</button>
     <button id="btnHome">Home</button>
   </div>
 </div>
@@ -345,7 +374,7 @@ function giveHint(){
 }
 function hasConflict(r,c,num){const{size,board,boxDef}=G;for(let i=0;i<size;i++){if(i!==c&&board[r][i]===num)return true;if(i!==r&&board[i][c]===num)return true}const box=getBoxId(r,c,size,boxDef);for(let rr=0;rr<size;rr++)for(let cc=0;cc<size;cc++){if((rr!==r||cc!==c)&&getBoxId(rr,cc,size,boxDef)===box&&board[rr][cc]===num)return true}return false}
 function highlightConflicts(r,c,num){const{size,board,boxDef}=G;const box=getBoxId(r,c,size,boxDef);for(let rr=0;rr<size;rr++)for(let cc=0;cc<size;cc++){if(rr===r&&cc===c)continue;if((rr===r||cc===c||getBoxId(rr,cc,size,boxDef)===box)&&board[rr][cc]===num){const el=getCellEl(rr,cc);el.classList.add('conflict');setTimeout(()=>el.classList.remove('conflict'),600)}}getCellEl(r,c).classList.add('conflict');setTimeout(()=>getCellEl(r,c).classList.remove('conflict'),600)}
-function checkWin(){const{size,board,solution}=G;for(let r=0;r<size;r++)for(let c=0;c<size;c++){if(board[r][c]!==solution[r][c])return}stopTimer();playWin();const stars=calcStars();setStars(G.level,stars);setUnlocked(G.level+2);setTimeout(()=>showResult(stars),400)}
+function checkWin(){const{size,board,solution}=G;let allFilled=true;for(let r=0;r<size;r++)for(let c=0;c<size;c++){if(board[r][c]===0){allFilled=false;continue}}if(allFilled){let correct=true;for(let r=0;r<size;r++)for(let c=0;c<size;c++){if(board[r][c]!==solution[r][c]){correct=false;break}}if(correct){stopTimer();playWin();const stars=calcStars();setStars(G.level,stars);setUnlocked(G.level+2);setTimeout(()=>showResult(stars),400)}else{checkBoardFull()}}}
 
 // ============ TIMER ============
 function startTimer(){G.timer=0;G.paused=false;clearInterval(G.timerInterval);G.timerInterval=setInterval(()=>{if(!G.paused){G.timer++;updateTimerDisplay();updateProgress()}},1000)}
@@ -368,15 +397,98 @@ function startLevel(lv){
   showScreen('gameScreen');renderGrid();renderNumpad();startTimer();
 }
 
+// ============ TOAST ============
+function showToast(msg,dur=2500){
+  document.querySelectorAll('.toast').forEach(e=>e.remove());
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>{if(t.parentNode)t.remove()},dur);
+}
+
+// ============ BOARD FULL CHECK (wrong answer feedback) ============
+function checkBoardFull(){
+  const{size,board,solution,given}=G;
+  let filled=true,wrong=[];
+  for(let r=0;r<size;r++)for(let c=0;c<size;c++){
+    if(board[r][c]===0){filled=false;continue}
+    if(!given[r][c]&&board[r][c]!==solution[r][c])wrong.push([r,c]);
+  }
+  if(filled&&wrong.length>0){
+    playError();
+    showToast(`${wrong.length} cell${wrong.length>1?'s':''} incorrect! Check highlighted cells.`,3000);
+    wrong.forEach(([r,c])=>{const el=getCellEl(r,c);el.classList.add('conflict');setTimeout(()=>el.classList.remove('conflict'),2000)});
+  }
+}
+
+// ============ RULES MODAL ============
+function showRules(){
+  document.querySelectorAll('.rules-modal').forEach(e=>e.remove());
+  const m=document.createElement('div');m.className='rules-modal';
+  m.innerHTML=`<div class="rules-panel">
+    <h2>How to Play</h2>
+    <h3>Objective</h3>
+    <p>Fill every empty cell with a number so that each <b>row</b>, <b>column</b>, and <b>box</b> contains all numbers exactly once.</p>
+    <h3>Grid Sizes</h3>
+    <ul>
+      <li><b>5\u00d75</b> — Fill 1-5, irregular shaped boxes</li>
+      <li><b>6\u00d76</b> — Fill 1-6, 2\u00d73 rectangular boxes</li>
+      <li><b>9\u00d79</b> — Fill 1-9, classic 3\u00d73 boxes</li>
+    </ul>
+    <h3>Controls</h3>
+    <ul>
+      <li>Tap a cell, then tap a number to fill it</li>
+      <li><b>Notes</b> — Toggle pencil mode to mark candidates</li>
+      <li><b>Hint</b> — Reveals one correct cell (3 per puzzle)</li>
+      <li><b>Undo</b> — Revert your last move</li>
+      <li><b>Erase</b> — Clear the selected cell</li>
+    </ul>
+    <h3>Star Rating</h3>
+    <p>Earn up to 3 stars based on completion time. Faster = more stars!</p>
+    <h3>Tips</h3>
+    <ul>
+      <li>Start with rows/columns that have the most given numbers</li>
+      <li>Use Notes mode to track possible candidates</li>
+      <li>If all cells are filled but the puzzle isn't solved, some numbers are wrong — they'll be highlighted</li>
+    </ul>
+    <button class="close-rules">Got it!</button>
+  </div>`;
+  document.body.appendChild(m);
+  m.querySelector('.close-rules').onclick=()=>m.remove();
+  m.addEventListener('click',e=>{if(e.target===m)m.remove()});
+}
+
+// ============ TUTORIAL (first time only) ============
+const TUT_STEPS=[
+  {title:'Welcome!',img:'🎯',text:'Sudoku is a number puzzle. Fill every cell so each row, column, and box has unique numbers.'},
+  {title:'Tap to Fill',img:'👆',text:'Tap any empty cell, then tap a number below to place it. Conflicts are highlighted in red.'},
+  {title:'Use Notes',img:'✏️',text:'Toggle Notes mode to pencil-mark possible candidates in empty cells. Great for harder puzzles!'},
+  {title:'Get Help',img:'💡',text:'Use Hint to reveal a cell (3 per puzzle). Use Undo to fix mistakes. Erase clears a cell.'},
+  {title:'Earn Stars',img:'⭐',text:'Complete puzzles fast to earn 3 stars! Progress through 5\u00d75, 6\u00d76, and 9\u00d79 grids.'},
+];
+function showTutorial(onDone){
+  let step=0;
+  const ov=document.createElement('div');ov.className='tut-overlay';
+  function render(){
+    const s=TUT_STEPS[step];
+    ov.innerHTML=`<div class="tut-card"><div class="tut-img">${s.img}</div><h3>${s.title}</h3><p>${s.text}</p></div><div class="tut-dots">${TUT_STEPS.map((_,i)=>`<span class="${i===step?'active':''}"></span>`).join('')}</div><div class="tut-nav"><button class="btn-skip">Skip</button><button class="btn-next">${step===TUT_STEPS.length-1?'Start!':'Next'}</button></div>`;
+    ov.querySelector('.btn-skip').onclick=()=>{ov.remove();markTutDone();if(onDone)onDone()};
+    ov.querySelector('.btn-next').onclick=()=>{if(step<TUT_STEPS.length-1){step++;render()}else{ov.remove();markTutDone();if(onDone)onDone()}};
+  }
+  render();document.body.appendChild(ov);
+}
+function isTutDone(){try{return localStorage.getItem('sudoku_tut_done')==='1'}catch(e){return false}}
+function markTutDone(){try{localStorage.setItem('sudoku_tut_done','1')}catch(e){}}
+
 // ============ BINDINGS ============
 $('btnNotes').onclick=()=>{G.notesMode=!G.notesMode;$('btnNotes').classList.toggle('active')};
 $('btnUndo').onclick=undo;$('btnHint').onclick=giveHint;$('btnErase').onclick=eraseCell;
 $('btnHome').onclick=goHome;
+$('btnRules').onclick=showRules;
+$('btnRulesMap').onclick=showRules;
 document.addEventListener('keydown',e=>{const n=parseInt(e.key);if(n>=1&&n<=G.size)inputNumber(n);if(e.key==='Backspace'||e.key==='Delete')eraseCell();if(e.key==='z'&&(e.ctrlKey||e.metaKey))undo()});
 window.addEventListener('resize',()=>{if(G.puzzle&&document.getElementById('gameScreen').classList.contains('active'))renderGrid()});
 
 // ============ INIT ============
-renderMap();
+if(!isTutDone()){showTutorial(()=>renderMap())}else{renderMap()}
 </script>
 </body>
 </html>
