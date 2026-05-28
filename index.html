@@ -163,6 +163,7 @@ body{
     <h1>Sudoku</h1>
     <div class="tagline">A Journey of Numbers</div>
     <button id="btnRulesMap" style="margin-top:8px;background:linear-gradient(135deg,var(--teal),var(--navy));color:var(--gold);border:1px solid var(--gold);padding:6px 16px;border-radius:6px;font-size:.75em;cursor:pointer;font-family:inherit">How to Play</button>
+    <button id="btnTutMap" style="margin-top:8px;margin-left:6px;background:linear-gradient(135deg,var(--teal),var(--navy));color:var(--turquoise);border:1px solid var(--turquoise);padding:6px 16px;border-radius:6px;font-size:.75em;cursor:pointer;font-family:inherit">Tutorial</button>
   </div>
   <div class="map-scroll" id="mapScroll">
     <div class="map-container" id="mapContainer">
@@ -484,6 +485,7 @@ $('btnUndo').onclick=undo;$('btnHint').onclick=giveHint;$('btnErase').onclick=er
 $('btnHome').onclick=goHome;
 $('btnRules').onclick=showRules;
 $('btnRulesMap').onclick=showRules;
+$('btnTutMap').onclick=()=>showTutorial(null);
 document.addEventListener('keydown',e=>{const n=parseInt(e.key);if(n>=1&&n<=G.size)inputNumber(n);if(e.key==='Backspace'||e.key==='Delete')eraseCell();if(e.key==='z'&&(e.ctrlKey||e.metaKey))undo()});
 window.addEventListener('resize',()=>{if(G.puzzle&&document.getElementById('gameScreen').classList.contains('active'))renderGrid()});
 
